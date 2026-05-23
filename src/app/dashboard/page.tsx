@@ -4,6 +4,8 @@ import { groupDashboardItems } from "@/lib/dates";
 import type { DashboardItem, AssignmentWithCourse, ChecklistItemWithChecklist } from "@/lib/types";
 import { SignOutButton } from "./sign-out-button";
 import { DashboardRow } from "./dashboard-row";
+import { PushOptIn } from "@/components/push-opt-in";
+import { getMySubscriptionEndpoint } from "@/app/_actions/push";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +55,10 @@ export default async function DashboardPage() {
     );
   }
 
-  const items = await fetchDashboardItems(term.id);
+  const [items, storedEndpoint] = await Promise.all([
+    fetchDashboardItems(term.id),
+    getMySubscriptionEndpoint(),
+  ]);
   const groups = groupDashboardItems(items);
 
   return (
@@ -71,6 +76,11 @@ export default async function DashboardPage() {
           <SignOutButton />
         </div>
       </header>
+
+      {/* Push opt-in */}
+      <div className="px-5 pt-4">
+        <PushOptIn storedEndpoint={storedEndpoint} />
+      </div>
 
       {/* Groups */}
       <div className="flex flex-col gap-4 px-5 pt-4">
