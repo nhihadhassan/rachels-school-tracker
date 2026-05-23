@@ -56,6 +56,16 @@ export interface ChecklistItemWithChecklist extends ChecklistItem {
   checklist: Checklist;
 }
 
+export interface Attachment {
+  id: string;
+  assignment_id: string;
+  file_name: string;
+  storage_path: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  created_at: string;
+}
+
 export interface Subtask {
   id: string;
   assignment_id: string;

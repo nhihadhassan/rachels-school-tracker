@@ -3,9 +3,10 @@ import { updateAssignment } from "@/app/_actions/assignments";
 import { AssignmentForm } from "@/components/assignment-form";
 import { DeleteAssignmentButton } from "./delete-button";
 import { SubtaskList } from "./subtasks";
+import { AttachmentList } from "./attachments";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Assignment, Course, Subtask } from "@/lib/types";
+import type { Assignment, Attachment, Course, Subtask } from "@/lib/types";
 
 type Params = Promise<{ id: string }>;
 
@@ -36,6 +37,14 @@ export default async function EditAssignmentPage({ params }: { params: Params })
 
   const subtasks = (subtasksRaw ?? []) as Subtask[];
 
+  const { data: attachmentsRaw } = await supabase
+    .from("attachments")
+    .select("*")
+    .eq("assignment_id", id)
+    .order("created_at", { ascending: true });
+
+  const attachments = (attachmentsRaw ?? []) as Attachment[];
+
   const action = updateAssignment.bind(null, id);
 
   return (
@@ -57,6 +66,9 @@ export default async function EditAssignmentPage({ params }: { params: Params })
         />
         {/* Subtasks */}
         <SubtaskList assignmentId={id} initialSubtasks={subtasks} />
+
+        {/* Attachments */}
+        <AttachmentList assignmentId={id} initialAttachments={attachments} />
 
         <div className="border-t border-zinc-100 pt-4">
           <DeleteAssignmentButton id={id} />
