@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { BottomNav } from "@/components/bottom-nav";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
+import { MainContent } from "@/components/main-content";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,9 +41,9 @@ export default function RootLayout({
         <DesktopSidebar />
 
         {/* Main content — pushed right on desktop to clear sidebar */}
-        <div className="lg:pl-64">
+        <MainContent>
           {children}
-        </div>
+        </MainContent>
 
         {/* Mobile bottom nav — hidden on desktop */}
         <BottomNav />

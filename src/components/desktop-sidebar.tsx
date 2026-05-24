@@ -40,6 +40,8 @@ const nav = [
 export function DesktopSidebar() {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/login") || pathname.startsWith("/auth")) return null;
+
   return (
     <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 bg-slate-900 text-white z-20">
       {/* Branding */}
