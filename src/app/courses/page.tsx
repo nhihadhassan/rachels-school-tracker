@@ -5,6 +5,12 @@ import type { Assignment } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+function gradeColor(grade: number): string {
+  if (grade >= 80) return "text-emerald-600 bg-emerald-50";
+  if (grade >= 70) return "text-amber-600 bg-amber-50";
+  return "text-red-600 bg-red-50";
+}
+
 export default async function CoursesPage() {
   const supabase = await createClient();
 
@@ -23,7 +29,6 @@ export default async function CoursesPage() {
         .order("code")
     : { data: [] };
 
-  // Get practicum checklists
   const { data: checklists } = term
     ? await supabase
         .from("checklists")
@@ -32,79 +37,89 @@ export default async function CoursesPage() {
     : { data: [] };
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-20">
-      <header className="sticky top-0 z-10 flex items-center gap-3 bg-white/90 px-5 py-4 backdrop-blur border-b border-zinc-100">
-        <Link href="/dashboard" className="text-zinc-500 hover:text-zinc-800">
-          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        </Link>
-        <h1 className="flex-1 text-base font-semibold">{term?.name ?? "Courses"}</h1>
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-28">
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-white/95 px-5 py-4 backdrop-blur border-b border-zinc-100">
+        <div>
+          <h1 className="text-base font-semibold">Courses</h1>
+          {term && <p className="text-xs text-zinc-400">{term.name}</p>}
+        </div>
         <Link
           href="/courses/new"
-          className="flex items-center gap-1 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white"
+          className="flex items-center gap-1.5 rounded-xl bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-white active:scale-95 transition-transform"
         >
-          <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/></svg>
-          Course
+          <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"/>
+          </svg>
+          Add course
         </Link>
       </header>
 
-      <div className="flex flex-col gap-2 px-5 pt-4">
+      <div className="flex flex-col gap-2 px-5 pt-5">
+        {(courses ?? []).length === 0 && (checklists ?? []).length === 0 && (
+          <p className="py-16 text-center text-sm text-zinc-400">No courses yet. Tap Add course to get started.</p>
+        )}
+
         {(courses ?? []).map((course) => {
           const assignments = (course.assignments ?? []) as Assignment[];
           const grade = currentGrade(assignments);
-          const done = assignments.filter((a) => a.status === "done").length;
+          const open = assignments.filter((a) => a.status === "open").length;
+          const total = assignments.length;
+
           return (
             <Link
               key={course.id}
               href={`/courses/${course.id}`}
-              className="flex items-center gap-4 rounded-xl bg-white px-4 py-4 shadow-sm ring-1 ring-zinc-100 hover:ring-zinc-200 active:bg-zinc-50"
+              className="flex items-center gap-4 rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-zinc-100 active:bg-zinc-50 transition-colors"
             >
               <span
-                className="flex h-9 w-9 flex-none items-center justify-center rounded-lg text-white text-xs font-bold"
+                className="flex h-10 w-10 flex-none items-center justify-center rounded-xl text-white text-xs font-bold tracking-tight shadow-sm"
                 style={{ backgroundColor: course.color ?? "#94a3b8" }}
               >
-                {course.code.split(" ")[1]}
+                {course.code.split(" ")[1] ?? course.code.slice(0, 3)}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-zinc-900 leading-snug">{course.name}</p>
-                <p className="mt-0.5 text-xs text-zinc-500">
-                  {course.code} · {done}/{assignments.length} done
+                <p className="truncate text-sm font-semibold text-zinc-900">{course.name}</p>
+                <p className="mt-0.5 text-xs text-zinc-400">
+                  {course.code}
+                  {open > 0 ? ` · ${open} open` : total > 0 ? " · all done" : " · no assignments"}
                 </p>
               </div>
-              <div className="flex-none text-right">
-                {grade != null ? (
-                  <span className="text-sm font-semibold text-zinc-800">{grade.toFixed(1)}%</span>
-                ) : (
-                  <span className="text-xs text-zinc-400">No marks</span>
-                )}
-              </div>
+              {grade != null ? (
+                <span className={`flex-none rounded-xl px-2.5 py-1 text-sm font-bold tabular-nums ${gradeColor(grade)}`}>
+                  {grade.toFixed(1)}%
+                </span>
+              ) : (
+                <span className="flex-none text-xs text-zinc-300">No marks</span>
+              )}
             </Link>
           );
         })}
 
-        {/* Practicum checklists */}
         {(checklists ?? []).map((checklist) => {
           const items = checklist.checklist_items ?? [];
           const done = items.filter((i: { is_done: boolean }) => i.is_done).length;
+          const pct = items.length ? Math.round((done / items.length) * 100) : 0;
+
           return (
             <Link
               key={checklist.id}
               href={`/checklist/${checklist.id}`}
-              className="flex items-center gap-4 rounded-xl bg-white px-4 py-4 shadow-sm ring-1 ring-zinc-100 hover:ring-zinc-200 active:bg-zinc-50"
+              className="flex items-center gap-4 rounded-2xl bg-white px-4 py-4 shadow-sm ring-1 ring-zinc-100 active:bg-zinc-50 transition-colors"
             >
-              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-slate-200 text-slate-600 text-xs font-bold">
+              <span className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-slate-100 text-slate-500 text-xs font-bold">
                 PR
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-zinc-900 leading-snug">{checklist.name}</p>
-                <p className="mt-0.5 text-xs text-zinc-500">
-                  Checklist · {done}/{items.length} done
+                <p className="truncate text-sm font-semibold text-zinc-900">{checklist.name}</p>
+                <p className="mt-0.5 text-xs text-zinc-400">
+                  Practicum checklist · {done}/{items.length} done
                 </p>
               </div>
-              <svg className="h-4 w-4 flex-none text-zinc-300" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
+              <span className={`flex-none rounded-xl px-2.5 py-1 text-sm font-bold tabular-nums ${
+                pct === 100 ? "text-emerald-600 bg-emerald-50" : "text-zinc-600 bg-zinc-100"
+              }`}>
+                {pct}%
+              </span>
             </Link>
           );
         })}

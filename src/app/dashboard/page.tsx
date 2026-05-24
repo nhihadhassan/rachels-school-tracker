@@ -61,54 +61,69 @@ export default async function DashboardPage() {
   ]);
   const groups = groupDashboardItems(items);
 
+  const openCount = items.filter(
+    (i) =>
+      i.kind === "assignment"
+        ? i.item.status === "open"
+        : !i.item.is_done,
+  ).length;
+
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col gap-1 bg-zinc-50 pb-24">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-32">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-white/90 px-5 py-4 backdrop-blur border-b border-zinc-100">
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-white/95 px-5 py-4 backdrop-blur border-b border-zinc-100">
         <div>
           <h1 className="text-base font-semibold leading-tight">Rachel&apos;s Tracker</h1>
-          <p className="text-xs text-zinc-500">{term.name}</p>
+          <p className="text-xs text-zinc-400">{term.name}</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/courses" className="text-xs font-medium text-zinc-600 hover:text-zinc-900">
-            Courses
-          </Link>
+          {openCount > 0 && (
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-600">
+              {openCount} open
+            </span>
+          )}
           <SignOutButton />
         </div>
       </header>
 
-      {/* Push opt-in */}
-      <div className="px-5 pt-4">
-        <PushOptIn storedEndpoint={storedEndpoint} />
-      </div>
-
       {/* Groups */}
-      <div className="flex flex-col gap-4 px-5 pt-4">
+      <div className="flex flex-col gap-5 px-5 pt-5">
         {groups.length === 0 ? (
-          <p className="py-12 text-center text-sm text-zinc-400">No assignments yet.</p>
+          <div className="flex flex-col items-center gap-3 py-20 text-center">
+            <span className="text-4xl">🎉</span>
+            <p className="text-base font-semibold text-zinc-700">All caught up!</p>
+            <p className="text-sm text-zinc-400">No open assignments right now.</p>
+          </div>
         ) : (
           groups.map((group) => (
             <section key={group.key}>
-              <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+              <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400">
                 {group.label}
-                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-500 font-normal normal-case tracking-normal">
+                <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-zinc-500 font-medium normal-case tracking-normal">
                   {group.items.length}
                 </span>
               </h2>
               <ul className="flex flex-col gap-1.5">
                 {group.items.map((item) => (
-                  <DashboardRow key={item.kind === "assignment" ? `a-${item.item.id}` : `ci-${item.item.id}`} item={item} />
+                  <DashboardRow
+                    key={item.kind === "assignment" ? `a-${item.item.id}` : `ci-${item.item.id}`}
+                    item={item}
+                  />
                 ))}
               </ul>
             </section>
           ))
         )}
+
+        {/* Push opt-in — below main content, unobtrusive */}
+        <PushOptIn storedEndpoint={storedEndpoint} />
       </div>
 
-      {/* FAB: add assignment */}
+      {/* FAB: add assignment — above the bottom nav */}
       <Link
         href="/assignments/new"
-        className="fixed bottom-6 right-6 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg hover:bg-zinc-700 active:scale-95 transition-transform"
+        className="fixed bottom-20 right-5 flex h-14 w-14 items-center justify-center rounded-full bg-zinc-900 text-white shadow-lg hover:bg-zinc-700 active:scale-95 transition-transform z-10"
+        style={{ bottom: "calc(4rem + env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
         aria-label="Add assignment"
       >
         <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

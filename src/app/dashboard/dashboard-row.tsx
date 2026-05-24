@@ -159,9 +159,9 @@ export function DashboardRow({ item }: Props) {
         onMouseUp={onTouchEnd}
         onMouseLeave={onTouchEnd}
         onClick={onRowTap}
-        className={`flex items-center gap-3 rounded-xl bg-white px-3 py-3 shadow-sm ring-1 ring-zinc-100 transition-opacity select-none ${
-          pending ? "opacity-60" : ""
-        } ${item.kind === "assignment" ? "cursor-pointer active:bg-zinc-50" : ""}`}
+        className={`flex items-center gap-3 rounded-2xl bg-white px-3 py-3.5 shadow-sm ring-1 ring-zinc-100 transition-all select-none ${
+          pending ? "opacity-50" : ""
+        } ${item.kind === "assignment" ? "cursor-pointer active:bg-zinc-50 active:scale-[0.99]" : ""}`}
       >
         {/* Done checkbox */}
         <button

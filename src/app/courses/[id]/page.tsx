@@ -34,7 +34,7 @@ export default async function CourseDetailPage({ params }: { params: Params }) {
   const skipped = assignments.filter((a) => a.status === "skipped");
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-20">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-28">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/90 px-5 pt-4 pb-4 backdrop-blur border-b border-zinc-100">
         <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ function AssignmentSection({
           <Link
             key={a.id}
             href={`/assignments/${a.id}/edit`}
-            className={`flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-zinc-100 hover:ring-zinc-200 ${faded ? "opacity-60" : ""}`}
+            className={`flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-zinc-100 active:bg-zinc-50 transition-colors ${faded ? "opacity-50" : ""}`}
           >
             <div className="min-w-0 flex-1">
               <p className={`text-sm font-medium text-zinc-900 leading-snug ${faded ? "line-through" : ""}`}>

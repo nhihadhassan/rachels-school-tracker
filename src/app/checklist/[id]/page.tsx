@@ -31,7 +31,7 @@ export default async function ChecklistPage({ params }: { params: Params }) {
   const done = items.filter((i) => i.is_done).length;
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-20">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-28">
       <header className="sticky top-0 z-10 bg-white/90 px-5 py-4 backdrop-blur border-b border-zinc-100">
         <div className="flex items-center gap-3">
           <Link href="/courses" className="text-zinc-500 hover:text-zinc-800">
