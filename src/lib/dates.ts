@@ -79,9 +79,20 @@ export function groupDashboardItems(items: DashboardItem[]): DashboardGroup[] {
     }
   }
 
-  // Sort each group by due_date ascending
+  // Sort each group: priority desc (high > med > low > none), then due_date asc
+  const priorityRank: Record<string, number> = { high: 0, med: 1, low: 2 };
+  function itemPriority(item: DashboardItem): number {
+    if (item.kind === "assignment") {
+      return priorityRank[item.item.priority ?? ""] ?? 3;
+    }
+    return 3; // checklist items have no priority
+  }
+
   for (const key of Object.keys(groups) as GroupKey[]) {
     groups[key].sort((a, b) => {
+      const pa = itemPriority(a);
+      const pb = itemPriority(b);
+      if (pa !== pb) return pa - pb;
       const da = itemDueDate(a)?.getTime() ?? Infinity;
       const db = itemDueDate(b)?.getTime() ?? Infinity;
       return da - db;

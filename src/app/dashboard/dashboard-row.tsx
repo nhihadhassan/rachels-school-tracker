@@ -141,6 +141,15 @@ export function DashboardRow({ item }: Props) {
       ? `${item.item.mark_received}%`
       : null;
 
+  const priority =
+    item.kind === "assignment" ? item.item.priority : null;
+
+  const priorityStyle: Record<string, { dot: string; label: string }> = {
+    high: { dot: "bg-red-500",    label: "High"   },
+    med:  { dot: "bg-amber-400",  label: "Med"    },
+    low:  { dot: "bg-sky-400",    label: "Low"    },
+  };
+
   return (
     <>
       <li
@@ -194,7 +203,15 @@ export function DashboardRow({ item }: Props) {
           >
             {title}
           </p>
-          <p className="mt-0.5 text-xs text-zinc-500">{sub}</p>
+          <div className="mt-0.5 flex items-center gap-1.5">
+            {priority && priorityStyle[priority] && (
+              <span
+                className={`inline-block h-1.5 w-1.5 rounded-full flex-none ${priorityStyle[priority].dot}`}
+                title={priorityStyle[priority].label}
+              />
+            )}
+            <p className="text-xs text-zinc-500">{sub}</p>
+          </div>
         </div>
 
         {/* Right side */}
