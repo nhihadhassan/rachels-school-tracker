@@ -75,6 +75,7 @@ export function BottomNav() {
   const hide =
     pathname.startsWith("/login") ||
     pathname.startsWith("/auth") ||
+    pathname.startsWith("/terms") ||
     pathname === "/assignments/new" ||
     pathname === "/courses/new" ||
     /\/assignments\/.+\/edit/.test(pathname) ||

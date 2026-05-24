@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { currentGrade } from "@/lib/grade";
-import type { Assignment } from "@/lib/types";
+import { TermSwitcher } from "@/components/term-switcher";
+import type { Assignment, Term } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +15,10 @@ function gradeColor(grade: number): string {
 export default async function CoursesPage() {
   const supabase = await createClient();
 
-  const { data: term } = await supabase
-    .from("terms")
-    .select("*")
-    .eq("is_active", true)
-    .limit(1)
-    .maybeSingle();
+  const [{ data: term }, { data: allTerms }] = await Promise.all([
+    supabase.from("terms").select("*").eq("is_active", true).limit(1).maybeSingle(),
+    supabase.from("terms").select("*").order("created_at", { ascending: false }),
+  ]);
 
   const { data: courses } = term
     ? await supabase
@@ -41,7 +40,12 @@ export default async function CoursesPage() {
       <header className="sticky top-0 z-10 flex items-center justify-between bg-white/95 px-5 py-4 backdrop-blur border-b border-zinc-100">
         <div>
           <h1 className="text-base font-semibold">Courses</h1>
-          {term && <p className="text-xs text-zinc-400">{term.name}</p>}
+          {term && (
+            <TermSwitcher
+              terms={(allTerms ?? []) as Term[]}
+              activeTermId={term.id}
+            />
+          )}
         </div>
         <Link
           href="/courses/new"
