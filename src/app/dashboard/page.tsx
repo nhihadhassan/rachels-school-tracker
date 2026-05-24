@@ -7,7 +7,9 @@ import { SignOutButton } from "./sign-out-button";
 import { DashboardRow } from "./dashboard-row";
 import { MiniCalendar } from "./mini-calendar";
 import { PushOptIn } from "@/components/push-opt-in";
+import { GCalConnect } from "@/components/gcal-connect";
 import { getMySubscriptionEndpoint } from "@/app/_actions/push";
+import { getGCalStatus } from "@/app/_actions/google-calendar";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +33,12 @@ async function fetchDashboardItems(termId: string): Promise<DashboardItem[]> {
   ];
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ gcal?: string }>;
+}) {
+  const { gcal } = await searchParams;
   const supabase = await createClient();
 
   const { data: term } = await supabase
@@ -45,9 +52,10 @@ export default async function DashboardPage() {
     );
   }
 
-  const [items, storedEndpoint, { data: coursesRaw }] = await Promise.all([
+  const [items, storedEndpoint, gcalConnected, { data: coursesRaw }] = await Promise.all([
     fetchDashboardItems(term.id),
     getMySubscriptionEndpoint(),
+    getGCalStatus(),
     supabase.from("courses").select("*, assignments(*)").eq("term_id", term.id).order("code"),
   ]);
 
@@ -155,6 +163,24 @@ export default async function DashboardPage() {
             Add assignment
           </Link>
         </div>
+
+        {/* GCal connection feedback */}
+        {gcal === "connected" && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-100 px-5 py-3">
+            <svg className="h-4 w-4 text-emerald-600 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>
+            </svg>
+            <p className="text-sm text-emerald-700 font-medium">Google Calendar connected! New assignments will sync automatically.</p>
+          </div>
+        )}
+        {gcal === "error" && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl bg-red-50 border border-red-100 px-5 py-3">
+            <svg className="h-4 w-4 text-red-500 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p className="text-sm text-red-700 font-medium">Could not connect Google Calendar. Please try again.</p>
+          </div>
+        )}
 
         {/* Stat cards row */}
         <div className="grid grid-cols-4 gap-4 mb-6">
@@ -312,6 +338,9 @@ export default async function DashboardPage() {
 
             {/* Push opt-in */}
             <PushOptIn storedEndpoint={storedEndpoint} />
+
+            {/* Google Calendar connect */}
+            <GCalConnect connected={gcalConnected} />
           </div>
         </div>
       </div>
