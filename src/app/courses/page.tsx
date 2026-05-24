@@ -36,10 +36,10 @@ export default async function CoursesPage() {
     : { data: [] };
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-28">
-      <header className="sticky top-0 z-10 flex items-center justify-between bg-white/95 px-5 py-4 backdrop-blur border-b border-zinc-100">
+    <main className="min-h-screen bg-zinc-50 pb-28 lg:pb-12">
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-white/95 px-5 py-4 backdrop-blur border-b border-zinc-100 lg:px-8 lg:py-5">
         <div>
-          <h1 className="text-base font-semibold">Courses</h1>
+          <h1 className="text-base font-semibold lg:text-2xl lg:font-bold">Courses</h1>
           {term && (
             <TermSwitcher
               terms={(allTerms ?? []) as Term[]}
@@ -58,7 +58,7 @@ export default async function CoursesPage() {
         </Link>
       </header>
 
-      <div className="flex flex-col gap-2 px-5 pt-5">
+      <div className="grid grid-cols-1 gap-2 px-5 pt-5 lg:grid-cols-2 lg:px-8 lg:gap-3 lg:pt-6">
         {(courses ?? []).length === 0 && (checklists ?? []).length === 0 && (
           <p className="py-16 text-center text-sm text-zinc-400">No courses yet. Tap Add course to get started.</p>
         )}

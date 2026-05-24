@@ -50,11 +50,11 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
   const todayMonth = format(new Date(), "yyyy-MM");
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-20">
+    <main className="min-h-screen bg-zinc-50 pb-20 lg:pb-8">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-zinc-100 px-5 py-4">
+      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-zinc-100 px-5 py-4 lg:px-8 lg:py-5">
         <div className="flex items-center justify-between">
-          <h1 className="text-base font-semibold text-zinc-900">
+          <h1 className="text-base font-semibold text-zinc-900 lg:text-2xl lg:font-bold">
             {format(monthStart, "MMMM yyyy")}
           </h1>
           <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
       </header>
 
       {/* Grid */}
-      <div className="px-2 pt-2">
+      <div className="px-2 pt-2 lg:px-6 lg:pt-4">
         <div className="grid grid-cols-7">
           {days.map((day) => {
             const dayAssignments = allAssignments.filter((a) =>
@@ -112,7 +112,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[80px] p-1 border-b border-r border-zinc-100 ${!inMonth ? "bg-zinc-50/50" : "bg-white"}`}
+                className={`min-h-[80px] lg:min-h-[130px] p-1 lg:p-2 border-b border-r border-zinc-100 ${!inMonth ? "bg-zinc-50/50" : "bg-white"}`}
               >
                 {/* Day number */}
                 <div className="flex items-center justify-center mb-1">
@@ -126,11 +126,11 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
 
                 {/* Dots / items */}
                 <div className="flex flex-col gap-0.5">
-                  {dayAssignments.slice(0, 3).map((a) => (
+                  {dayAssignments.slice(0, 4).map((a) => (
                     <Link
                       key={a.id}
                       href={`/assignments/${a.id}/edit`}
-                      className="block truncate rounded px-1 py-0.5 text-[10px] font-medium leading-tight"
+                      className="block truncate rounded px-1 py-0.5 text-[10px] lg:text-xs font-medium leading-tight"
                       style={{
                         backgroundColor: a.course?.color ? `${a.course.color}22` : "#f4f4f5",
                         color: a.course?.color ?? "#52525b",

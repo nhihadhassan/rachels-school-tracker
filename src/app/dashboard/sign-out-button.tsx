@@ -22,7 +22,7 @@ export function SignOutButton() {
       type="button"
       onClick={onClick}
       disabled={pending}
-      className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+      className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 disabled:opacity-60 transition-colors text-left"
     >
       {pending ? "..." : "Sign out"}
     </button>

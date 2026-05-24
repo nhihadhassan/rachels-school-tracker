@@ -20,7 +20,7 @@ export default async function NewAssignmentPage({
     : { data: [] };
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-20">
+    <main className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-zinc-50 pb-20 lg:max-w-2xl">
       <header className="sticky top-0 z-10 flex items-center gap-3 bg-white/90 px-5 py-4 backdrop-blur border-b border-zinc-100">
         <Link href="/dashboard" className="text-zinc-500 hover:text-zinc-800">
           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
