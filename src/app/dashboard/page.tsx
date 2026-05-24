@@ -5,6 +5,7 @@ import { currentGrade } from "@/lib/grade";
 import type { DashboardItem, AssignmentWithCourse, ChecklistItemWithChecklist, Assignment } from "@/lib/types";
 import { SignOutButton } from "./sign-out-button";
 import { DashboardRow } from "./dashboard-row";
+import { MiniCalendar } from "./mini-calendar";
 import { PushOptIn } from "@/components/push-opt-in";
 import { getMySubscriptionEndpoint } from "@/app/_actions/push";
 
@@ -258,6 +259,9 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             </div>
+
+            {/* Mini calendar */}
+            <MiniCalendar items={items} />
 
             {/* Grades per course */}
             {courses.length > 0 && (
