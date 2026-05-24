@@ -40,7 +40,7 @@ export default function RootLayout({
         <DesktopSidebar />
 
         {/* Main content — pushed right on desktop to clear sidebar */}
-        <div className="lg:pl-60">
+        <div className="lg:pl-64">
           {children}
         </div>
 
