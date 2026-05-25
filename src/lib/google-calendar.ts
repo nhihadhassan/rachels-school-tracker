@@ -6,6 +6,11 @@
 const GCAL_API = "https://www.googleapis.com/calendar/v3";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 
+// Rachel's "Due Dates" calendar -- all assignment events go here, not to primary
+const DUE_DATES_CALENDAR_ID = encodeURIComponent(
+  "eac1d7e3da514aabeda180eb3ae49d0352874b8920fef7fe12780e20f84f0df5@group.calendar.google.com",
+);
+
 export interface GCalToken {
   access_token: string;
   refresh_token: string;
@@ -113,7 +118,7 @@ export async function createCalendarEvent(
   accessToken: string,
   event: GCalEventInput,
 ): Promise<string> {
-  const res = await fetch(`${GCAL_API}/calendars/primary/events`, {
+  const res = await fetch(`${GCAL_API}/calendars/${DUE_DATES_CALENDAR_ID}/events`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -140,7 +145,7 @@ export async function updateCalendarEvent(
   eventId: string,
   event: GCalEventInput,
 ): Promise<void> {
-  const res = await fetch(`${GCAL_API}/calendars/primary/events/${eventId}`, {
+  const res = await fetch(`${GCAL_API}/calendars/${DUE_DATES_CALENDAR_ID}/events/${eventId}`, {
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -165,7 +170,7 @@ export async function deleteCalendarEvent(
   accessToken: string,
   eventId: string,
 ): Promise<void> {
-  const res = await fetch(`${GCAL_API}/calendars/primary/events/${eventId}`, {
+  const res = await fetch(`${GCAL_API}/calendars/${DUE_DATES_CALENDAR_ID}/events/${eventId}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${accessToken}` },
   });
