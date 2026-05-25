@@ -6,7 +6,7 @@ import type { DashboardItem, AssignmentWithCourse, ChecklistItemWithChecklist, A
 import { SignOutButton } from "./sign-out-button";
 import { DashboardRow } from "./dashboard-row";
 import { MiniCalendar } from "./mini-calendar";
-import { MarkAllChecklistButtons } from "./mark-all-checklist-button";
+import { MarkOverdueButton } from "./mark-all-checklist-button";
 import { PushOptIn } from "@/components/push-opt-in";
 import { GCalConnect } from "@/components/gcal-connect";
 import { getMySubscriptionEndpoint } from "@/app/_actions/push";
@@ -74,16 +74,6 @@ export default async function DashboardPage({
 
   const courses = (coursesRaw ?? []) as Array<{ id: string; code: string; name: string; color: string | null; assignments: Assignment[] }>;
 
-  // Unique checklists that still have undone items (for "Mark all done" buttons)
-  const checklistsWithUndoneItems = [
-    ...new Map(
-      items
-        .filter((i): i is { kind: "checklist_item"; item: ChecklistItemWithChecklist } =>
-          i.kind === "checklist_item" && !i.item.is_done
-        )
-        .map((i) => [i.item.checklist.id, { id: i.item.checklist.id, name: i.item.checklist.name }])
-    ).values(),
-  ];
 
   // Compute average grade across all courses that have a grade
   const gradesWithValues = courses
@@ -221,9 +211,10 @@ export default async function DashboardPage({
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
-                <p className="text-sm font-medium text-red-700">
+                <p className="text-sm font-medium text-red-700 flex-1">
                   {overdueCount} overdue {overdueCount === 1 ? "item" : "items"} — take care of these first.
                 </p>
+                <MarkOverdueButton termId={term.id} />
               </div>
             )}
 
@@ -295,7 +286,6 @@ export default async function DashboardPage({
                   </svg>
                   Open calendar
                 </Link>
-                <MarkAllChecklistButtons checklists={checklistsWithUndoneItems} />
               </div>
             </div>
 
@@ -385,12 +375,6 @@ export default async function DashboardPage({
               </ul>
             </section>
           ))
-        )}
-        {checklistsWithUndoneItems.length > 0 && (
-          <div className="rounded-xl bg-white border border-zinc-100 shadow-sm p-4 flex flex-col gap-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Checklist</p>
-            <MarkAllChecklistButtons checklists={checklistsWithUndoneItems} />
-          </div>
         )}
         <PushOptIn storedEndpoint={storedEndpoint} />
       </div>

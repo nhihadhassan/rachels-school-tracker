@@ -58,6 +58,47 @@ function gcalDescription(d: {
   return parts.join(" | ");
 }
 
+/** Mark every overdue open assignment + undone checklist item for the term as done */
+export async function markOverdueDone(termId: string) {
+  const { supabase } = await getAuthedClient();
+  const now = new Date().toISOString();
+
+  // Assignments: get course IDs for the term, then bulk-update
+  const { data: courses } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("term_id", termId);
+  const courseIds = (courses ?? []).map((c) => c.id);
+
+  if (courseIds.length > 0) {
+    await supabase
+      .from("assignments")
+      .update({ status: "done", completed_at: now })
+      .in("course_id", courseIds)
+      .eq("status", "open")
+      .lt("due_date", now);
+  }
+
+  // Checklist items: get checklist IDs for the term, then bulk-update
+  const { data: checklists } = await supabase
+    .from("checklists")
+    .select("id")
+    .eq("term_id", termId);
+  const checklistIds = (checklists ?? []).map((c) => c.id);
+
+  if (checklistIds.length > 0) {
+    await supabase
+      .from("checklist_items")
+      .update({ is_done: true, completed_at: now })
+      .in("checklist_id", checklistIds)
+      .eq("is_done", false)
+      .lt("due_date", now);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/courses");
+}
+
 export async function markDone(id: string) {
   const { supabase } = await getAuthedClient();
   await supabase
