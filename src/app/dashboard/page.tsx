@@ -68,12 +68,12 @@ export default async function DashboardPage({
     i.kind === "assignment" ? i.item.status === "done" : i.item.is_done
   ).length;
 
-  // This-week count (first group is usually "This Week")
-  const thisWeekCount = groups.find((g) => g.key === "this-week")?.items.length ?? 0;
+  const thisWeekItems = groups.find((g) => g.key === "this-week")?.items ?? [];
   const overdueCount = groups.find((g) => g.key === "overdue")?.items.length ?? 0;
+  const nextDueItem = thisWeekItems[0] ?? null;
+  const extraThisWeek = Math.max(0, thisWeekItems.length - 1);
 
   const courses = (coursesRaw ?? []) as Array<{ id: string; code: string; name: string; color: string | null; assignments: Assignment[] }>;
-
 
   // Compute average grade across all courses that have a grade
   const gradesWithValues = courses
@@ -83,52 +83,13 @@ export default async function DashboardPage({
     ? gradesWithValues.reduce((a, b) => a + b, 0) / gradesWithValues.length
     : null;
 
-  const statCards = [
-    {
-      label: "Open Assignments",
-      value: openCount.toString(),
-      icon: (
-        <svg className="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-        </svg>
-      ),
-      iconBg: "bg-blue-50",
-    },
-    {
-      label: "Due This Week",
-      value: thisWeekCount.toString(),
-      icon: (
-        <svg className="h-5 w-5 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" />
-          <path d="M16 2v4M8 2v4M3 10h18" />
-        </svg>
-      ),
-      iconBg: "bg-violet-50",
-    },
-    {
-      label: "Completed",
-      value: doneCount.toString(),
-      icon: (
-        <svg className="h-5 w-5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-          <path d="M22 4L12 14.01l-3-3" />
-        </svg>
-      ),
-      iconBg: "bg-emerald-50",
-    },
-    {
-      label: "Avg Grade",
-      value: avgGrade != null ? `${avgGrade.toFixed(1)}%` : "--",
-      icon: (
-        <svg className="h-5 w-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-          <polyline points="17 6 23 6 23 12" />
-        </svg>
-      ),
-      iconBg: "bg-amber-50",
-    },
-  ];
+  // Format time estimate for display
+  function fmtTime(mins: number) {
+    if (mins < 60) return `${mins}m`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? `${h}h ${m}m` : `${h}h`;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -184,19 +145,117 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Stat cards row */}
+        {/* Top cards row */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          {statCards.map((card) => (
-            <div key={card.label} className="rounded-xl bg-white border border-zinc-100 p-5 flex items-center justify-between shadow-sm">
-              <div>
-                <p className="text-xs text-zinc-500 mb-1">{card.label}</p>
-                <p className="text-2xl font-bold text-zinc-900">{card.value}</p>
+          {/* Up Next spotlight — spans 3 cols */}
+          <div className="col-span-3 rounded-xl bg-white border border-zinc-100 shadow-sm p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 mb-3">Up Next This Week</p>
+            {nextDueItem ? (() => {
+              if (nextDueItem.kind === "assignment") {
+                const a = nextDueItem.item;
+                const accentColor = a.course?.color ?? "#94a3b8";
+                const dueStr = new Date(a.due_date).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" });
+                return (
+                  <div className="flex gap-4">
+                    <div className="w-1 rounded-full flex-none" style={{ backgroundColor: accentColor }} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: accentColor }}>{a.course?.code}</span>
+                        <span className="text-zinc-200">·</span>
+                        <span className="text-xs text-zinc-500">Due {dueStr}</span>
+                        {extraThisWeek > 0 && (
+                          <span className="ml-auto text-xs text-zinc-400">+{extraThisWeek} more this week</span>
+                        )}
+                      </div>
+                      <p className="text-lg font-bold text-zinc-900 mb-2 leading-tight">{a.title}</p>
+                      {/* Prep chips */}
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {a.weight != null && (
+                          <span className="rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700">
+                            Worth {a.weight}%
+                          </span>
+                        )}
+                        {a.time_estimate_minutes != null && (
+                          <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                            Est. {fmtTime(a.time_estimate_minutes)}
+                          </span>
+                        )}
+                        {a.priority === "high" && (
+                          <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-600">
+                            High priority
+                          </span>
+                        )}
+                        {a.priority === "med" && (
+                          <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-600">
+                            Medium priority
+                          </span>
+                        )}
+                      </div>
+                      {a.notes ? (
+                        <p className="text-sm text-zinc-500 leading-relaxed line-clamp-2">
+                          <span className="font-medium text-zinc-600">Prep note: </span>{a.notes}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-zinc-400 italic">
+                          {a.weight != null && a.weight >= 25
+                            ? "High-weight item — review materials thoroughly before the due date."
+                            : "No prep notes yet — add notes on this assignment for guidance."}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              } else {
+                const ci = nextDueItem.item;
+                const dueStr = ci.due_date
+                  ? new Date(ci.due_date).toLocaleDateString("en-CA", { weekday: "short", month: "short", day: "numeric" })
+                  : null;
+                return (
+                  <div className="flex gap-4">
+                    <div className="w-1 rounded-full flex-none bg-amber-400" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold uppercase tracking-wide text-amber-500">Practicum</span>
+                        {dueStr && <><span className="text-zinc-200">·</span><span className="text-xs text-zinc-500">Due {dueStr}</span></>}
+                        {extraThisWeek > 0 && (
+                          <span className="ml-auto text-xs text-zinc-400">+{extraThisWeek} more this week</span>
+                        )}
+                      </div>
+                      <p className="text-lg font-bold text-zinc-900 mb-2 leading-tight">{ci.title}</p>
+                      <p className="text-sm text-zinc-400 italic">Complete and submit via your practicum portal.</p>
+                    </div>
+                  </div>
+                );
+              }
+            })() : (
+              <div className="flex items-center gap-4 py-1">
+                <span className="text-3xl">🎉</span>
+                <div>
+                  <p className="font-semibold text-zinc-700">Nothing due this week!</p>
+                  <p className="text-sm text-zinc-400 mt-0.5">Great time to get ahead on upcoming work.</p>
+                </div>
               </div>
-              <div className={`w-12 h-12 rounded-xl ${card.iconBg} flex items-center justify-center flex-none`}>
-                {card.icon}
+            )}
+          </div>
+
+          {/* Avg Grade */}
+          <div className="rounded-xl bg-white border border-zinc-100 p-5 flex flex-col justify-between shadow-sm">
+            <div className="flex items-start justify-between">
+              <p className="text-xs text-zinc-500">Avg Grade</p>
+              <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center flex-none">
+                <svg className="h-4 w-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                  <polyline points="17 6 23 6 23 12" />
+                </svg>
               </div>
             </div>
-          ))}
+            <p className="text-3xl font-bold text-zinc-900 mt-2">
+              {avgGrade != null ? `${avgGrade.toFixed(1)}%` : "--"}
+            </p>
+            <p className="text-xs text-zinc-400 mt-1">
+              {gradesWithValues.length > 0 ? `Across ${gradesWithValues.length} course${gradesWithValues.length > 1 ? "s" : ""}` : "No marks yet"}
+            </p>
+          </div>
         </div>
 
         {/* Two-column body */}
