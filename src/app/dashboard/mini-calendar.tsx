@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, isSameDay, isToday, format, isSameMonth,
+  eachDayOfInterval, isToday, format, isSameMonth,
+  addMonths, subMonths,
 } from "date-fns";
 import type { DashboardItem } from "@/lib/types";
 
@@ -10,14 +14,17 @@ interface Props {
 }
 
 export function MiniCalendar({ items }: Props) {
-  const today = new Date();
-  const monthStart = startOfMonth(today);
-  const monthEnd = endOfMonth(today);
+  const [offset, setOffset] = useState(0); // 0 = current month, -1 = prev, +1 = next
+  const base = new Date();
+  const viewing = offset === 0 ? base : offset > 0 ? addMonths(base, offset) : subMonths(base, -offset);
+
+  const monthStart = startOfMonth(viewing);
+  const monthEnd = endOfMonth(viewing);
   const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 });
   const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
-  const monthSlug = format(today, "yyyy-MM");
+  const monthSlug = format(viewing, "yyyy-MM");
 
   // Build a map: date string -> array of colors for that day
   const dayColors: Record<string, string[]> = {};
@@ -29,7 +36,7 @@ export function MiniCalendar({ items }: Props) {
     const color =
       item.kind === "assignment"
         ? (item.item.course?.color ?? "#94a3b8")
-        : "#f59e0b"; // amber for practicum
+        : "#f59e0b";
     if (!dayColors[key]) dayColors[key] = [];
     if (!dayColors[key].includes(color)) dayColors[key].push(color);
   }
@@ -38,12 +45,30 @@ export function MiniCalendar({ items }: Props) {
     <div className="rounded-xl bg-white border border-zinc-100 shadow-sm p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <svg className="h-4 w-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex items-center gap-1.5">
+          <svg className="h-4 w-4 text-zinc-400 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
-          <h2 className="text-sm font-semibold text-zinc-800">{format(today, "MMMM yyyy")}</h2>
+          <button
+            onClick={() => setOffset((o) => o - 1)}
+            className="p-0.5 rounded hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 transition-colors"
+            aria-label="Previous month"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <h2 className="text-sm font-semibold text-zinc-800 w-28 text-center">{format(viewing, "MMMM yyyy")}</h2>
+          <button
+            onClick={() => setOffset((o) => o + 1)}
+            className="p-0.5 rounded hover:bg-zinc-100 text-zinc-400 hover:text-zinc-700 transition-colors"
+            aria-label="Next month"
+          >
+            <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+          </button>
         </div>
         <Link
           href={`/calendar?month=${monthSlug}`}
@@ -67,7 +92,7 @@ export function MiniCalendar({ items }: Props) {
         {days.map((day) => {
           const key = format(day, "yyyy-MM-dd");
           const colors = dayColors[key] ?? [];
-          const inMonth = isSameMonth(day, today);
+          const inMonth = isSameMonth(day, viewing);
           const isT = isToday(day);
           const daySlug = format(day, "yyyy-MM");
 
@@ -88,7 +113,6 @@ export function MiniCalendar({ items }: Props) {
               >
                 {format(day, "d")}
               </span>
-              {/* Colored dots */}
               {colors.length > 0 && (
                 <div className="flex gap-0.5 h-1.5">
                   {colors.slice(0, 3).map((color, i) => (

@@ -75,3 +75,14 @@ export async function deleteChecklistItem(id: string, checklistId: string) {
   revalidatePath(`/checklist/${checklistId}`);
   revalidatePath("/dashboard");
 }
+
+export async function markAllItemsDone(checklistId: string) {
+  const supabase = await getAuthedClient();
+  await supabase
+    .from("checklist_items")
+    .update({ is_done: true, completed_at: new Date().toISOString() })
+    .eq("checklist_id", checklistId)
+    .eq("is_done", false);
+  revalidatePath(`/checklist/${checklistId}`);
+  revalidatePath("/dashboard");
+}

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { ChecklistItem } from "@/lib/types";
 import { ChecklistRow } from "./checklist-row";
 import { AddItemForm } from "./add-item-form";
+import { MarkAllButton } from "./mark-all-button";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export default async function ChecklistPage({ params }: { params: Params }) {
             <h1 className="text-base font-semibold">{checklist.name}</h1>
             <p className="text-xs text-zinc-500">{checklist.term?.name} · {done}/{items.length} done</p>
           </div>
+          <MarkAllButton checklistId={id} allDone={done === items.length} />
         </div>
       </header>
 
