@@ -6,6 +6,7 @@ import type { DashboardItem, AssignmentWithCourse, ChecklistItemWithChecklist, A
 import { SignOutButton } from "./sign-out-button";
 import { DashboardRow } from "./dashboard-row";
 import { MiniCalendar } from "./mini-calendar";
+import { MarkAllChecklistButtons } from "./mark-all-checklist-button";
 import { PushOptIn } from "@/components/push-opt-in";
 import { GCalConnect } from "@/components/gcal-connect";
 import { getMySubscriptionEndpoint } from "@/app/_actions/push";
@@ -72,6 +73,17 @@ export default async function DashboardPage({
   const overdueCount = groups.find((g) => g.key === "overdue")?.items.length ?? 0;
 
   const courses = (coursesRaw ?? []) as Array<{ id: string; code: string; name: string; color: string | null; assignments: Assignment[] }>;
+
+  // Unique checklists that still have undone items (for "Mark all done" buttons)
+  const checklistsWithUndoneItems = [
+    ...new Map(
+      items
+        .filter((i): i is { kind: "checklist_item"; item: ChecklistItemWithChecklist } =>
+          i.kind === "checklist_item" && !i.item.is_done
+        )
+        .map((i) => [i.item.checklist.id, { id: i.item.checklist.id, name: i.item.checklist.name }])
+    ).values(),
+  ];
 
   // Compute average grade across all courses that have a grade
   const gradesWithValues = courses
@@ -283,6 +295,7 @@ export default async function DashboardPage({
                   </svg>
                   Open calendar
                 </Link>
+                <MarkAllChecklistButtons checklists={checklistsWithUndoneItems} />
               </div>
             </div>
 
@@ -372,6 +385,12 @@ export default async function DashboardPage({
               </ul>
             </section>
           ))
+        )}
+        {checklistsWithUndoneItems.length > 0 && (
+          <div className="rounded-xl bg-white border border-zinc-100 shadow-sm p-4 flex flex-col gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Checklist</p>
+            <MarkAllChecklistButtons checklists={checklistsWithUndoneItems} />
+          </div>
         )}
         <PushOptIn storedEndpoint={storedEndpoint} />
       </div>
